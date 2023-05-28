@@ -117,13 +117,25 @@ export class AppComponent implements OnInit {
         // Then you update that record using data from dialogData (values you enetered)
         const currentStock = this.exampleDatabase.dataChange.value[foundIndex];
         const newStockData:Stock =  this.stockService.getDialogData();
+
+        const newShares = currentStock.shares + Number(newStockData.shares);
+        const newCost = currentStock.cost + (newStockData.avgPrice * Number(newStockData.shares));
+        const newAvgPrice = (currentStock.cost + newCost) / newShares;
+        console.log('shares',newShares);
+        console.log('cost', newCost);
+        console.log('newAvgPrice', newAvgPrice);
+        
     
-        const updatedStock = {
+        const updatedStock:Stock = {
           ticker: currentStock.ticker, 
-          shares: currentStock.shares+ Number(newStockData.shares),
-          cost: currentStock.cost + (newStockData.cost * Number(newStockData.shares)),
-          avgPrice: (currentStock.avgPrice + newStockData.cost) / currentStock.shares+ Number(newStockData.shares)
+          shares: newShares,
+          cost: newCost,
+          avgPrice: newAvgPrice
       }
+      
+      //avg= 20 share =2 cost= 40
+      //avg= 20 share =2 cost= 40
+      //avg 20 share 4 cost 80 
         console.log('currentStock', currentStock);
         console.log('newStockData', newStockData);
         

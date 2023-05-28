@@ -21,8 +21,8 @@
 
         <div class="form">
             <mat-form-field color="accent">
-                <input matInput #input class="form-control" placeholder="Cost per share" [(ngModel)]="data.cost"
-                    name="cost" required>
+                <input matInput #input class="form-control" placeholder="Price per share" [(ngModel)]="data.avgPrice"
+                    name="avgPrice" required>
                 <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
             </mat-form-field>
         </div>
