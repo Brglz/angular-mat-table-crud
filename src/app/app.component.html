@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <span>Portfolio Tracker</span>
+  <span>Div Track</span>
   <span class="spacer"></span>
   Reload data:
   <button mat-icon-button (click)="refresh()">
@@ -44,14 +44,18 @@
     <!-- actions -->
     <ng-container matColumnDef="actions">
       <mat-header-cell *matHeaderCellDef>
-        <button mat-icon-button color="primary" (click)="addNew()">
+        <button mat-icon-button color="primary" style="color:#4ecca3" (click)="addNew()">
           <mat-icon aria-label="Example icon-button with a heart icon">add</mat-icon>
         </button>
       </mat-header-cell>
 
       <mat-cell *matCellDef="let row; let i=index;">
-        <button mat-icon-button color="primary" (click)="startEdit(i, row.ticker, row.shares, row.cost, row.avgPrice)">
+        <button mat-icon-button color="primary" style="color:#4ecca3" (click)="addShares(i, row.ticker, row.shares, row.cost, row.avgPrice)">
           <mat-icon aria-label="Edit">add</mat-icon>
+        </button>
+
+        <button mat-icon-button color="primary" style="color:#4ecca3" (click)="startEdit(i, row.id, row.title, row.state, row.url, row.created_at, row.updated_at)">
+          <mat-icon aria-label="Edit">edit</mat-icon>
         </button>
 
         <button mat-icon-button color="accent" (click)="deleteItem(i, row.ticker, row.shares, row.cost, row.avgPrice)">

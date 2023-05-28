@@ -4,7 +4,24 @@
 
 @include mat-core();
 
-$primary: mat-palette($mat-light-green, 500);
+// $primary: mat-palette($mat-light-green, 500);
+$primary: (
+  default: #4ecca3,
+  50: #e7f8f1,
+  100: #c2e6d8,
+  200: #9bddc0,
+  300: #73d4a7,
+  400: #5bcea1,
+  500: #4ecca3, // Updated primary color
+  600: #46c79c,
+  700: #3fc395,
+  800: #37be8e,
+  900: #28af80,
+  A100: #a2f5db,
+  A200: #6ff0c7,
+  A400: #3cecad,
+  A700: #1be798,
+);
 $accent:  mat-palette($mat-pink, 500, A200, A400);
 $warn:    mat-palette($mat-red, 500);
 

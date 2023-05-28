@@ -19,6 +19,7 @@ import {DeleteDialogComponent} from './dialogs/delete/delete.dialog.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { StockService } from './services/stock.service';
+import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
 
 
 @NgModule({
@@ -26,7 +27,8 @@ import { StockService } from './services/stock.service';
         AppComponent,
         AddDialogComponent,
         EditDialogComponent,
-        DeleteDialogComponent
+        DeleteDialogComponent,
+        AddSharesComponent
     ],
     imports: [
         BrowserModule,

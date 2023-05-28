@@ -1,0 +1,36 @@
+<div class="container">
+    <h3 mat-dialog-title>Add shares to - {{data.ticker}}</h3>
+
+    <form class="mat-dialog-content" (ngSubmit)="submit" #formControl="ngForm">
+
+        <!-- <div class="form">
+            <mat-form-field color="accent">
+                <input matInput #input class="form-control" placeholder="Ticker" [(ngModel)]="data.ticker" name="ticker"
+                    required>
+                <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
+            </mat-form-field>
+        </div> -->
+
+        <div class="form">
+            <mat-form-field color="accent">
+                <input matInput #input class="form-control" placeholder="Shares" [(ngModel)]="data.shares" name="shares"
+                    required>
+                <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div class="form">
+            <mat-form-field color="accent">
+                <input matInput #input class="form-control" placeholder="Cost per share" [(ngModel)]="data.cost"
+                    name="cost" required>
+                <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
+            </mat-form-field>
+        </div>
+
+        <div mat-dialog-actions>
+            <button mat-button [type]="submit" [disabled]="!formControl.valid" [mat-dialog-close]="1"
+                (click)="stopEdit()">Save</button>
+            <button mat-button (click)="onNoClick()" tabindex="-1">Cancel</button>
+        </div>
+    </form>
+</div>

@@ -13,6 +13,7 @@ import {DeleteDialogComponent} from './dialogs/delete/delete.dialog.component';
 import {BehaviorSubject, fromEvent, merge, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
 import { Stock } from './models/stock';
+import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
 
 @Component({
   selector: 'app-root',
@@ -93,6 +94,41 @@ export class AppComponent implements OnInit {
         const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.ticker === this.id);
         // for delete we use splice in order to remove single object from DataService
         this.exampleDatabase.dataChange.value.splice(foundIndex, 1);
+        this.refreshTable();
+      }
+    });
+  }
+
+  addShares(i: number, ticker: string, shares: number, cost: number, avgPrice: number) {
+    this.index = i;
+    this.id = ticker;
+    console.log('initial data:', {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice});
+    
+    const dialogRef = this.dialog.open(AddSharesComponent, {
+      data: {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice}
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 1) {
+        // When using an edit things are little different, firstly we find record inside DataService by id
+        const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.ticker === this.id);
+        console.log('foindindex', foundIndex);
+        
+        // Then you update that record using data from dialogData (values you enetered)
+        const currentStock = this.exampleDatabase.dataChange.value[foundIndex];
+        const newStockData:Stock =  this.stockService.getDialogData();
+    
+        const updatedStock = {
+          ticker: currentStock.ticker, 
+          shares: currentStock.shares+ Number(newStockData.shares),
+          cost: currentStock.cost + (newStockData.cost * Number(newStockData.shares)),
+          avgPrice: (currentStock.avgPrice + newStockData.cost) / currentStock.shares+ Number(newStockData.shares)
+      }
+        console.log('currentStock', currentStock);
+        console.log('newStockData', newStockData);
+        
+        this.exampleDatabase.dataChange.value[foundIndex] = updatedStock;
+        // And lastly refresh table
         this.refreshTable();
       }
     });
