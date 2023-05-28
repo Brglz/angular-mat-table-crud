@@ -1,8 +1,10 @@
 import { MAT_DIALOG_DATA, MatDialogRef } from '@angular/material/dialog';
 import {Component, Inject} from '@angular/core';
 import {DataService} from '../../services/data.service';
+import {StockService} from '../../services/stock.service';
 import {FormControl, Validators} from '@angular/forms';
 import {Issue} from '../../models/issue';
+import { Stock } from '../../models/stock';
 
 @Component({
   selector: 'app-add.dialog',
@@ -12,8 +14,8 @@ import {Issue} from '../../models/issue';
 
 export class AddDialogComponent {
   constructor(public dialogRef: MatDialogRef<AddDialogComponent>,
-              @Inject(MAT_DIALOG_DATA) public data: Issue,
-              public dataService: DataService) { }
+              @Inject(MAT_DIALOG_DATA) public data: Stock, //stel
+              public dataService: DataService, private stockService: StockService) { }
 
   formControl = new FormControl('', [
     Validators.required
@@ -35,6 +37,7 @@ export class AddDialogComponent {
   }
 
   public confirmAdd(): void {
-    this.dataService.addIssue(this.data);
+    // this.dataService.addIssue(this.data); //stel
+    this.stockService.addIssue(this.data);
   }
 }

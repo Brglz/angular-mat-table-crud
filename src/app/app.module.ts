@@ -18,6 +18,7 @@ import {EditDialogComponent} from './dialogs/edit/edit.dialog.component';
 import {DeleteDialogComponent} from './dialogs/delete/delete.dialog.component';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
+import { StockService } from './services/stock.service';
 
 
 @NgModule({
@@ -43,7 +44,7 @@ import {FormsModule, ReactiveFormsModule} from '@angular/forms';
         ReactiveFormsModule
     ],
     providers: [
-        DataService
+        DataService, StockService
     ],
     bootstrap: [AppComponent]
 })

@@ -1,5 +1,6 @@
 import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
 import {DataService} from './services/data.service';
+import {StockService} from './services/stock.service';
 import {HttpClient} from '@angular/common/http';
 import {MatDialog} from '@angular/material/dialog';
 import {MatPaginator} from '@angular/material/paginator';
@@ -11,6 +12,7 @@ import {EditDialogComponent} from './dialogs/edit/edit.dialog.component';
 import {DeleteDialogComponent} from './dialogs/delete/delete.dialog.component';
 import {BehaviorSubject, fromEvent, merge, Observable} from 'rxjs';
 import {map} from 'rxjs/operators';
+import { Stock } from './models/stock';
 
 @Component({
   selector: 'app-root',
@@ -19,15 +21,16 @@ import {map} from 'rxjs/operators';
 })
 
 export class AppComponent implements OnInit {
-  displayedColumns = ['id', 'title', 'state', 'url', 'created_at', 'updated_at', 'actions'];
-  exampleDatabase: DataService | null;
+  displayedColumns = ['ticker', 'shares', 'cost', 'avgPrice', 'actions'];
+  // exampleDatabase: DataService | null;//stel
+  exampleDatabase: StockService;
   dataSource: ExampleDataSource | null;
   index: number;
-  id: number;
+  id: string;
 
   constructor(public httpClient: HttpClient,
               public dialog: MatDialog,
-              public dataService: DataService) {}
+              public dataService: DataService, private stockService: StockService) {}
 
   @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
   @ViewChild(MatSort, {static: true}) sort: MatSort;
@@ -43,50 +46,51 @@ export class AppComponent implements OnInit {
 
   addNew() {
     const dialogRef = this.dialog.open(AddDialogComponent, {
-      data: {issue: Issue }
+      data: {issue: Stock }//stel
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 1) {
         // After dialog is closed we're doing frontend updates
         // For add we're just pushing a new row inside DataService
-        this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());
+        // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());//stel
+        this.exampleDatabase.dataChange.value.push(this.stockService.getDialogData());
         this.refreshTable();
       }
     });
   }
 
-  startEdit(i: number, id: number, title: string, state: string, url: string, created_at: string, updated_at: string) {
-    this.id = id;
+  startEdit(i: number, ticker: string, shares: number, cost: number, avgPrice: number) {
+    this.id = ticker;
     // index row is used just for debugging proposes and can be removed
     this.index = i;
     console.log(this.index);
     const dialogRef = this.dialog.open(EditDialogComponent, {
-      data: {id: id, title: title, state: state, url: url, created_at: created_at, updated_at: updated_at}
+      data: {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice}
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 1) {
         // When using an edit things are little different, firstly we find record inside DataService by id
-        const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.id === this.id);
+        const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.ticker === this.id);
         // Then you update that record using data from dialogData (values you enetered)
-        this.exampleDatabase.dataChange.value[foundIndex] = this.dataService.getDialogData();
+        this.exampleDatabase.dataChange.value[foundIndex] = this.stockService.getDialogData();
         // And lastly refresh table
         this.refreshTable();
       }
     });
   }
 
-  deleteItem(i: number, id: number, title: string, state: string, url: string) {
+  deleteItem(i: number, ticker: string, shares: number, cost: number, avgPrice: number) {
     this.index = i;
-    this.id = id;
+    this.id = ticker;
     const dialogRef = this.dialog.open(DeleteDialogComponent, {
-      data: {id: id, title: title, state: state, url: url}
+      data: {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice}
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 1) {
-        const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.id === this.id);
+        const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.ticker === this.id);
         // for delete we use splice in order to remove single object from DataService
         this.exampleDatabase.dataChange.value.splice(foundIndex, 1);
         this.refreshTable();
@@ -122,8 +126,11 @@ export class AppComponent implements OnInit {
 
 
   public loadData() {
-    this.exampleDatabase = new DataService(this.httpClient);
+    this.exampleDatabase = new StockService();
     this.dataSource = new ExampleDataSource(this.exampleDatabase, this.paginator, this.sort);
+    console.log("data", this.dataSource);
+    console.log("data", this.exampleDatabase);
+    
     fromEvent(this.filter.nativeElement, 'keyup')
       // .debounceTime(150)
       // .distinctUntilChanged()
@@ -136,7 +143,7 @@ export class AppComponent implements OnInit {
   }
 }
 
-export class ExampleDataSource extends DataSource<Issue> {
+export class ExampleDataSource extends DataSource<Stock> { //stel
   _filterChange = new BehaviorSubject('');
 
   get filter(): string {
@@ -147,10 +154,10 @@ export class ExampleDataSource extends DataSource<Issue> {
     this._filterChange.next(filter);
   }
 
-  filteredData: Issue[] = [];
-  renderedData: Issue[] = [];
+  filteredData: Stock[] = [];
+  renderedData: Stock[] = [];
 
-  constructor(public _exampleDatabase: DataService,
+  constructor(public _exampleDatabase: StockService,//stel
               public _paginator: MatPaginator,
               public _sort: MatSort) {
     super();
@@ -159,8 +166,10 @@ export class ExampleDataSource extends DataSource<Issue> {
   }
 
   /** Connect function called by the table to retrieve one stream containing the data to render. */
-  connect(): Observable<Issue[]> {
+  connect(): Observable<Stock[]> {//stel
     // Listen for any changes in the base data, sorting, filtering, or pagination
+    console.log('OPA',this._exampleDatabase);
+    
     const displayDataChanges = [
       this._exampleDatabase.dataChange,
       this._sort.sortChange,
@@ -173,8 +182,8 @@ export class ExampleDataSource extends DataSource<Issue> {
 
     return merge(...displayDataChanges).pipe(map( () => {
         // Filter data
-        this.filteredData = this._exampleDatabase.data.slice().filter((issue: Issue) => {
-          const searchStr = (issue.id + issue.title + issue.url + issue.created_at).toLowerCase();
+        this.filteredData = this._exampleDatabase.data.slice().filter((issue: Stock) => {//stel
+          const searchStr = (issue.ticker).toLowerCase();
           return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
         });
 
@@ -184,6 +193,8 @@ export class ExampleDataSource extends DataSource<Issue> {
         // Grab the page's slice of the filtered sorted data.
         const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
         this.renderedData = sortedData.splice(startIndex, this._paginator.pageSize);
+        console.log('hahaha',this.renderedData);
+        
         return this.renderedData;
       }
     ));
@@ -193,7 +204,7 @@ export class ExampleDataSource extends DataSource<Issue> {
 
 
   /** Returns a sorted copy of the database data. */
-  sortData(data: Issue[]): Issue[] {
+  sortData(data: Stock[]): Stock[] {//stel
     if (!this._sort.active || this._sort.direction === '') {
       return data;
     }
@@ -203,12 +214,10 @@ export class ExampleDataSource extends DataSource<Issue> {
       let propertyB: number | string = '';
 
       switch (this._sort.active) {
-        case 'id': [propertyA, propertyB] = [a.id, b.id]; break;
-        case 'title': [propertyA, propertyB] = [a.title, b.title]; break;
-        case 'state': [propertyA, propertyB] = [a.state, b.state]; break;
-        case 'url': [propertyA, propertyB] = [a.url, b.url]; break;
-        case 'created_at': [propertyA, propertyB] = [a.created_at, b.created_at]; break;
-        case 'updated_at': [propertyA, propertyB] = [a.updated_at, b.updated_at]; break;
+        case 'id': [propertyA, propertyB] = [a.ticker, b.ticker]; break;
+        case 'title': [propertyA, propertyB] = [a.shares, b.shares]; break;
+        case 'state': [propertyA, propertyB] = [a.cost, b.cost]; break;
+        case 'url': [propertyA, propertyB] = [a.avgPrice, b.avgPrice]; break;
       }
 
       const valueA = isNaN(+propertyA) ? propertyA : +propertyA;
