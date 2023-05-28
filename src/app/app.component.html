@@ -1,5 +1,5 @@
 <mat-toolbar color="primary">
-  <span>Angular 13 MatTable CRUD Example</span>
+  <span>Portfolio Tracker</span>
   <span class="spacer"></span>
   Reload data:
   <button mat-icon-button (click)="refresh()">
@@ -60,8 +60,8 @@
       </mat-header-cell>
 
       <mat-cell *matCellDef="let row; let i=index;">
-        <button mat-icon-button color="accent" (click)="startEdit(i, row.id, row.title, row.state, row.url, row.created_at, row.updated_at)">
-          <mat-icon aria-label="Edit">edit</mat-icon>
+        <button mat-icon-button color="primary" (click)="startEdit(i, row.id, row.title, row.state, row.url, row.created_at, row.updated_at)">
+          <mat-icon aria-label="Edit">add</mat-icon>
         </button>
 
         <button mat-icon-button color="accent" (click)="deleteItem(i, row.id, row.title, row.state, row.url)">
