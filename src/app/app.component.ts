@@ -1,19 +1,20 @@
-import {Component, ElementRef, OnInit, ViewChild} from '@angular/core';
-import {DataService} from './services/data.service';
-import {StockService} from './services/stock.service';
-import {HttpClient} from '@angular/common/http';
-import {MatDialog} from '@angular/material/dialog';
-import {MatPaginator} from '@angular/material/paginator';
-import {MatSort} from '@angular/material/sort';
-import {Issue} from './models/issue';
-import {DataSource} from '@angular/cdk/collections';
-import {AddDialogComponent} from './dialogs/add/add.dialog.component';
-import {EditDialogComponent} from './dialogs/edit/edit.dialog.component';
-import {DeleteDialogComponent} from './dialogs/delete/delete.dialog.component';
-import {BehaviorSubject, fromEvent, merge, Observable} from 'rxjs';
-import {map} from 'rxjs/operators';
+import { Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { DataService } from './services/data.service';
+import { StockService } from './services/stock.service';
+import { HttpClient } from '@angular/common/http';
+import { MatDialog } from '@angular/material/dialog';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
+import { Issue } from './models/issue';
+import { DataSource } from '@angular/cdk/collections';
+import { AddDialogComponent } from './dialogs/add/add.dialog.component';
+import { EditDialogComponent } from './dialogs/edit/edit.dialog.component';
+import { DeleteDialogComponent } from './dialogs/delete/delete.dialog.component';
+import { BehaviorSubject, fromEvent, merge, Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Stock } from './models/stock';
 import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
+import { ApexChart, ApexNonAxisChartSeries } from 'ng-apexcharts';
 
 @Component({
   selector: 'app-root',
@@ -28,14 +29,15 @@ export class AppComponent implements OnInit {
   dataSource: ExampleDataSource | null;
   index: number;
   id: string;
+  chartValues: Stock[];
 
   constructor(public httpClient: HttpClient,
-              public dialog: MatDialog,
-              public dataService: DataService, private stockService: StockService) {}
+    public dialog: MatDialog,
+    public dataService: DataService, private stockService: StockService) { }
 
-  @ViewChild(MatPaginator, {static: true}) paginator: MatPaginator;
-  @ViewChild(MatSort, {static: true}) sort: MatSort;
-  @ViewChild('filter',  {static: true}) filter: ElementRef;
+  @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
+  @ViewChild(MatSort, { static: true }) sort: MatSort;
+  @ViewChild('filter', { static: true }) filter: ElementRef;
 
   ngOnInit() {
     this.loadData();
@@ -47,7 +49,7 @@ export class AppComponent implements OnInit {
 
   addNew() {
     const dialogRef = this.dialog.open(AddDialogComponent, {
-      data: {issue: Stock }//stel
+      data: { issue: Stock }//stel
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -55,7 +57,9 @@ export class AppComponent implements OnInit {
         // After dialog is closed we're doing frontend updates
         // For add we're just pushing a new row inside DataService
         // this.exampleDatabase.dataChange.value.push(this.dataService.getDialogData());//stel
-        this.exampleDatabase.dataChange.value.push(this.stockService.getDialogData());
+        const newStock: Stock = this.stockService.getDialogData();
+        newStock.cost = newStock.avgPrice * newStock.shares;
+        this.exampleDatabase.dataChange.value.push(newStock);
         this.refreshTable();
       }
     });
@@ -65,9 +69,8 @@ export class AppComponent implements OnInit {
     this.id = ticker;
     // index row is used just for debugging proposes and can be removed
     this.index = i;
-    console.log(this.index);
     const dialogRef = this.dialog.open(EditDialogComponent, {
-      data: {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice}
+      data: { ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -86,8 +89,9 @@ export class AppComponent implements OnInit {
     this.index = i;
     this.id = ticker;
     const dialogRef = this.dialog.open(DeleteDialogComponent, {
-      data: {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice}
+      data: { ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice }
     });
+    // this.chartValues = this.dataSource.renderedData;
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 1) {
@@ -102,43 +106,34 @@ export class AppComponent implements OnInit {
   addShares(i: number, ticker: string, shares: number, cost: number, avgPrice: number) {
     this.index = i;
     this.id = ticker;
-    console.log('initial data:', {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice});
-    
+
     const dialogRef = this.dialog.open(AddSharesComponent, {
-      data: {ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice}
+      data: { ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice }
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 1) {
         // When using an edit things are little different, firstly we find record inside DataService by id
         const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.ticker === this.id);
-        console.log('foindindex', foundIndex);
-        
+
         // Then you update that record using data from dialogData (values you enetered)
         const currentStock = this.exampleDatabase.dataChange.value[foundIndex];
-        const newStockData:Stock =  this.stockService.getDialogData();
+        const newStockData: Stock = this.stockService.getDialogData();
 
-        const newShares = currentStock.shares + Number(newStockData.shares);
+
+
+        const newShares = +currentStock.shares + Number(newStockData.shares);
         const newCost = currentStock.cost + (newStockData.avgPrice * Number(newStockData.shares));
-        const newAvgPrice = (currentStock.cost + newCost) / newShares;
-        console.log('shares',newShares);
-        console.log('cost', newCost);
-        console.log('newAvgPrice', newAvgPrice);
-        
-    
-        const updatedStock:Stock = {
-          ticker: currentStock.ticker, 
+        const newAvgPrice = newCost / newShares;
+
+
+        const updatedStock: Stock = {
+          ticker: currentStock.ticker,
           shares: newShares,
           cost: newCost,
           avgPrice: newAvgPrice
-      }
-      
-      //avg= 20 share =2 cost= 40
-      //avg= 20 share =2 cost= 40
-      //avg 20 share 4 cost 80 
-        console.log('currentStock', currentStock);
-        console.log('newStockData', newStockData);
-        
+        }
+
         this.exampleDatabase.dataChange.value[foundIndex] = updatedStock;
         // And lastly refresh table
         this.refreshTable();
@@ -152,6 +147,7 @@ export class AppComponent implements OnInit {
     // Thanks yeager-j for tips
     // https://github.com/marinantonio/angular-mat-table-crud/issues/12
     this.paginator._changePageSize(this.paginator.pageSize);
+    this.refreshChartData();
   }
 
 
@@ -176,9 +172,8 @@ export class AppComponent implements OnInit {
   public loadData() {
     this.exampleDatabase = new StockService();
     this.dataSource = new ExampleDataSource(this.exampleDatabase, this.paginator, this.sort);
-    console.log("data", this.dataSource);
-    console.log("data", this.exampleDatabase);
-    
+    this.refreshChartData();
+
     fromEvent(this.filter.nativeElement, 'keyup')
       // .debounceTime(150)
       // .distinctUntilChanged()
@@ -188,6 +183,15 @@ export class AppComponent implements OnInit {
         }
         this.dataSource.filter = this.filter.nativeElement.value;
       });
+  }
+
+  refreshChartData() {
+    console.log('refresh');
+    console.log('datasource', this.dataSource);
+    console.log('chart', this.chartValues);
+    
+    
+    this.chartValues = this.dataSource._exampleDatabase.stockData;
   }
 }
 
@@ -206,8 +210,8 @@ export class ExampleDataSource extends DataSource<Stock> { //stel
   renderedData: Stock[] = [];
 
   constructor(public _exampleDatabase: StockService,//stel
-              public _paginator: MatPaginator,
-              public _sort: MatSort) {
+    public _paginator: MatPaginator,
+    public _sort: MatSort) {
     super();
     // Reset to the first page when the user changes the filter.
     this._filterChange.subscribe(() => this._paginator.pageIndex = 0);
@@ -216,8 +220,7 @@ export class ExampleDataSource extends DataSource<Stock> { //stel
   /** Connect function called by the table to retrieve one stream containing the data to render. */
   connect(): Observable<Stock[]> {//stel
     // Listen for any changes in the base data, sorting, filtering, or pagination
-    console.log('OPA',this._exampleDatabase);
-    
+
     const displayDataChanges = [
       this._exampleDatabase.dataChange,
       this._sort.sortChange,
@@ -228,27 +231,26 @@ export class ExampleDataSource extends DataSource<Stock> { //stel
     this._exampleDatabase.getAllIssues();
 
 
-    return merge(...displayDataChanges).pipe(map( () => {
-        // Filter data
-        this.filteredData = this._exampleDatabase.data.slice().filter((issue: Stock) => {//stel
-          const searchStr = (issue.ticker).toLowerCase();
-          return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
-        });
+    return merge(...displayDataChanges).pipe(map(() => {
+      // Filter data
+      this.filteredData = this._exampleDatabase.data.slice().filter((issue: Stock) => {//stel
+        const searchStr = (issue.ticker).toLowerCase();
+        return searchStr.indexOf(this.filter.toLowerCase()) !== -1;
+      });
 
-        // Sort filtered data
-        const sortedData = this.sortData(this.filteredData.slice());
+      // Sort filtered data
+      const sortedData = this.sortData(this.filteredData.slice());
 
-        // Grab the page's slice of the filtered sorted data.
-        const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
-        this.renderedData = sortedData.splice(startIndex, this._paginator.pageSize);
-        console.log('hahaha',this.renderedData);
-        
-        return this.renderedData;
-      }
+      // Grab the page's slice of the filtered sorted data.
+      const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
+      this.renderedData = sortedData.splice(startIndex, this._paginator.pageSize);
+
+      return this.renderedData;
+    }
     ));
   }
 
-  disconnect() {}
+  disconnect() { }
 
 
   /** Returns a sorted copy of the database data. */

@@ -13,25 +13,24 @@
     <!--Textarea for demo purposes-->
     <div class="form">
       <mat-form-field color="accent">
-        <textarea matInput #input class="form-control" placeholder="Shares" [(ngModel)]="data.shares" name="shares" required ></textarea>
+        <input type="number" matInput #input class="form-control" placeholder="Shares" [(ngModel)]="data.shares" name="shares" required >
         <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
       </mat-form-field>
     </div>
 
-    <!--Contains mat-hint for characters count and has maxLengt set-->
     <div class="form">
+      <mat-form-field color="accent">
+        <input type="number" matInput #inputstate class="form-control" placeholder="Price" [(ngModel)]="data.avgPrice" name="avgPrice" required >
+        <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
+      </mat-form-field>
+    </div>
+
+    <!-- <div class="form">
       <mat-form-field color="accent">
         <input matInput #inputstate class="form-control" placeholder="Cost" [(ngModel)]="data.cost" name="cost" required >
         <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
       </mat-form-field>
-    </div>
-
-    <div class="form">
-      <mat-form-field color="accent">
-        <input matInput #inputstate class="form-control" placeholder="Average Price" [(ngModel)]="data.avgPrice" name="avgPrice" required >
-        <mat-error *ngIf="formControl.invalid">{{getErrorMessage()}}</mat-error>
-      </mat-form-field>
-    </div>
+    </div> -->
 
     <div mat-dialog-actions>
       <button mat-button [type]="submit" [disabled]="!formControl.valid" [mat-dialog-close]="1" (click)="confirmAdd()">Save</button>

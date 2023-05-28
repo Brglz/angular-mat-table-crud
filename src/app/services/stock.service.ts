@@ -9,14 +9,14 @@ import { Stock } from '../models/stock';
 })
 export class StockService {
   stockData:Stock[] = [
-    {ticker: 'MSFT', shares: 2, cost: 27, avgPrice: 13.99},
-    {ticker: 'AAPL', shares: 13, cost: 40, avgPrice: 14.23},
-    {ticker: 'O', shares: 3, cost: 40, avgPrice: 26.01},
-    {ticker: 'KO', shares: 18, cost: 40, avgPrice: 17.1},
-    {ticker: 'NEE', shares: 2, cost: 40, avgPrice: 20},
-    {ticker: 'MCD', shares: 34, cost: 40, avgPrice: 49.3},
-    {ticker: 'SCHD', shares: 0.5, cost: 40, avgPrice: 100.2},
-    {ticker: 'V', shares: 12.4, cost: 40, avgPrice: 20.2}
+    {ticker: 'MSFT', shares: 2, cost: 200, avgPrice: 100},
+    {ticker: 'AAPL', shares: 5, cost: 500, avgPrice: 100},
+    {ticker: 'O', shares: 1, cost: 90, avgPrice: 90},
+    {ticker: 'KO', shares: 10, cost: 550, avgPrice: 55},
+    {ticker: 'NEE', shares: 1, cost: 110, avgPrice: 100},
+    {ticker: 'MCD', shares: 0.5, cost: 50, avgPrice: 100},
+    {ticker: 'SCHD', shares: 1, cost: 80, avgPrice: 80},
+    {ticker: 'V', shares: 10, cost: 50, avgPrice: 5}
   ]
 
   dataChange: BehaviorSubject<Stock[]> = new BehaviorSubject<Stock[]>([]);
@@ -50,12 +50,10 @@ export class StockService {
 
   updateIssue (issue: Stock): void {
     this.dialogData = issue;
+    
   }
 
   addShares (issue: Stock): void {
-    console.log('dialogdata', this.dialogData);
-    console.log('stock', issue);
-    
     this.dialogData = issue;
   }
 

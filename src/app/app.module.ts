@@ -20,6 +20,8 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {FormsModule, ReactiveFormsModule} from '@angular/forms';
 import { StockService } from './services/stock.service';
 import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
+import { PieChartComponent } from './features/pie-chart/pie-chart.component';
+import { NgApexchartsModule } from 'ng-apexcharts';
 
 
 @NgModule({
@@ -28,7 +30,8 @@ import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
         AddDialogComponent,
         EditDialogComponent,
         DeleteDialogComponent,
-        AddSharesComponent
+        AddSharesComponent,
+        PieChartComponent
     ],
     imports: [
         BrowserModule,
@@ -43,7 +46,8 @@ import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
         MatTableModule,
         MatToolbarModule,
         MatPaginatorModule,
-        ReactiveFormsModule
+        ReactiveFormsModule,
+        NgApexchartsModule
     ],
     providers: [
         DataService, StockService
