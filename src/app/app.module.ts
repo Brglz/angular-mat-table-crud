@@ -22,6 +22,7 @@ import { StockService } from './services/stock.service';
 import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
 import { PieChartComponent } from './features/pie-chart/pie-chart.component';
 import { NgApexchartsModule } from 'ng-apexcharts';
+import { PieChartRefreshService } from './services/pie-chart-refresh.service';
 
 
 @NgModule({
@@ -50,7 +51,7 @@ import { NgApexchartsModule } from 'ng-apexcharts';
         NgApexchartsModule
     ],
     providers: [
-        DataService, StockService
+        DataService, StockService, PieChartRefreshService
     ],
     bootstrap: [AppComponent]
 })

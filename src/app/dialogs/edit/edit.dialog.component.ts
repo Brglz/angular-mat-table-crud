@@ -34,7 +34,6 @@ export class EditDialogComponent {
   }
 
   stopEdit(): void {
-    // this.dataService.updateIssue(this.data); //stel
     this.stockService.updateIssue(this.data);
   }
 }

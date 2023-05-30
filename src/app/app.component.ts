@@ -5,7 +5,6 @@ import { HttpClient } from '@angular/common/http';
 import { MatDialog } from '@angular/material/dialog';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
-import { Issue } from './models/issue';
 import { DataSource } from '@angular/cdk/collections';
 import { AddDialogComponent } from './dialogs/add/add.dialog.component';
 import { EditDialogComponent } from './dialogs/edit/edit.dialog.component';
@@ -14,7 +13,7 @@ import { BehaviorSubject, fromEvent, merge, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Stock } from './models/stock';
 import { AddSharesComponent } from './dialogs/add-shares/add-shares.component';
-import { ApexChart, ApexNonAxisChartSeries } from 'ng-apexcharts';
+import { PieChartRefreshService } from './services/pie-chart-refresh.service';
 
 @Component({
   selector: 'app-root',
@@ -33,11 +32,15 @@ export class AppComponent implements OnInit {
 
   constructor(public httpClient: HttpClient,
     public dialog: MatDialog,
-    public dataService: DataService, private stockService: StockService) { }
+    public dataService: DataService, private stockService: StockService,private notificationService: PieChartRefreshService) { }
 
   @ViewChild(MatPaginator, { static: true }) paginator: MatPaginator;
   @ViewChild(MatSort, { static: true }) sort: MatSort;
   @ViewChild('filter', { static: true }) filter: ElementRef;
+
+  notifyChild() {
+    this.notificationService.notifyChild(this.exampleDatabase.stockData);
+  }
 
   ngOnInit() {
     this.loadData();
@@ -49,7 +52,7 @@ export class AppComponent implements OnInit {
 
   addNew() {
     const dialogRef = this.dialog.open(AddDialogComponent, {
-      data: { issue: Stock }//stel
+      data: { issue: Stock }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -69,8 +72,9 @@ export class AppComponent implements OnInit {
     this.id = ticker;
     // index row is used just for debugging proposes and can be removed
     this.index = i;
+    
     const dialogRef = this.dialog.open(EditDialogComponent, {
-      data: { ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice }
+      data: { ticker: ticker, shares: shares, cost: shares*avgPrice, avgPrice: avgPrice }
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -78,6 +82,8 @@ export class AppComponent implements OnInit {
         // When using an edit things are little different, firstly we find record inside DataService by id
         const foundIndex = this.exampleDatabase.dataChange.value.findIndex(x => x.ticker === this.id);
         // Then you update that record using data from dialogData (values you enetered)
+        const editedStock:Stock = this.stockService.getDialogData();
+        editedStock.cost = editedStock.avgPrice*editedStock.shares;
         this.exampleDatabase.dataChange.value[foundIndex] = this.stockService.getDialogData();
         // And lastly refresh table
         this.refreshTable();
@@ -91,7 +97,6 @@ export class AppComponent implements OnInit {
     const dialogRef = this.dialog.open(DeleteDialogComponent, {
       data: { ticker: ticker, shares: shares, cost: cost, avgPrice: avgPrice }
     });
-    // this.chartValues = this.dataSource.renderedData;
 
     dialogRef.afterClosed().subscribe(result => {
       if (result === 1) {
@@ -120,12 +125,9 @@ export class AppComponent implements OnInit {
         const currentStock = this.exampleDatabase.dataChange.value[foundIndex];
         const newStockData: Stock = this.stockService.getDialogData();
 
-
-
         const newShares = +currentStock.shares + Number(newStockData.shares);
         const newCost = currentStock.cost + (newStockData.avgPrice * Number(newStockData.shares));
         const newAvgPrice = newCost / newShares;
-
 
         const updatedStock: Stock = {
           ticker: currentStock.ticker,
@@ -135,7 +137,6 @@ export class AppComponent implements OnInit {
         }
 
         this.exampleDatabase.dataChange.value[foundIndex] = updatedStock;
-        // And lastly refresh table
         this.refreshTable();
       }
     });
@@ -143,11 +144,8 @@ export class AppComponent implements OnInit {
 
 
   private refreshTable() {
-    // Refreshing table using paginator
-    // Thanks yeager-j for tips
-    // https://github.com/marinantonio/angular-mat-table-crud/issues/12
     this.paginator._changePageSize(this.paginator.pageSize);
-    this.refreshChartData();
+    this.notifyChild();
   }
 
 
@@ -172,8 +170,8 @@ export class AppComponent implements OnInit {
   public loadData() {
     this.exampleDatabase = new StockService();
     this.dataSource = new ExampleDataSource(this.exampleDatabase, this.paginator, this.sort);
-    this.refreshChartData();
-
+    this.chartValues = this.exampleDatabase.stockData;
+    this.notifyChild;
     fromEvent(this.filter.nativeElement, 'keyup')
       // .debounceTime(150)
       // .distinctUntilChanged()
@@ -183,15 +181,6 @@ export class AppComponent implements OnInit {
         }
         this.dataSource.filter = this.filter.nativeElement.value;
       });
-  }
-
-  refreshChartData() {
-    console.log('refresh');
-    console.log('datasource', this.dataSource);
-    console.log('chart', this.chartValues);
-    
-    
-    this.chartValues = this.dataSource._exampleDatabase.stockData;
   }
 }
 
